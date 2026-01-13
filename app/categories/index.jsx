@@ -26,7 +26,8 @@ const CategoryScreen = () => {
 const styles = StyleSheet.create({
   map: {
     width: "100%",
-    height: "70%",
+    height: "60%",
+    bottom: 100,
   },
   container: {
     flex: 1,
@@ -38,7 +39,7 @@ const styles = StyleSheet.create({
   intro: {
     fontSize: 18,
     fontWeight: "bold",
-    bottom: 75,
+    bottom: 120,
   },
   button: {
     position: "absolute",
