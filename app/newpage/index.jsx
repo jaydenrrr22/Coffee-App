@@ -1,4 +1,4 @@
-import { PostItImage } from "@/assets/images/beantype.png";
+import PostItImage from "@/assets/images/beantype.png";
 import { Stack } from "expo-router";
 import { useState } from "react";
 import {
@@ -74,6 +74,12 @@ const NewPageScreen = () => {
             </View>
           );
         })}
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => router.push("/newpage")}
+        >
+          <Text style={styles.buttonText}>Continue</Text>
+        </TouchableOpacity>
       </View>
     </>
   );
@@ -86,8 +92,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   image: {
-    width: 120,
-    height: 120,
+    width: 350,
+    height: 200,
     marginBottom: 20,
     alignSelf: "center",
   },
@@ -134,6 +140,17 @@ const styles = StyleSheet.create({
     marginTop: 8,
     fontSize: 13,
     color: "#333",
+  },
+  button: {
+    backgroundColor: "#5a6283ff",
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "bold",
   },
 });
 
