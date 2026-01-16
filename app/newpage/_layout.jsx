@@ -1,7 +1,7 @@
 import { Stack } from "expo-router";
 
-const CategoryLayout = () => {
+const NewPageLayout = () => {
   return <Stack />;
 };
 
-export default CategoryLayout;
+export default NewPageLayout;
