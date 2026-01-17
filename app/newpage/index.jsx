@@ -1,5 +1,5 @@
 import PostItImage from "@/assets/images/beantype.png";
-import { Stack } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { useState } from "react";
 import {
   Image,
@@ -33,9 +33,18 @@ const roastData = [
   },
 ];
 
+const roastRoutes = [
+  "/roasts/light",
+  "/roasts/medium",
+  "/roasts/medium-dark",
+  "/roasts/dark",
+];
+
 const NewPageScreen = () => {
   const [expanded, setExpanded] = useState(null);
   const [selected, setSelected] = useState(null);
+  const router = useRouter();
+
   const toggleExpand = (index) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setExpanded(expanded === index ? null : index);
@@ -75,8 +84,12 @@ const NewPageScreen = () => {
           );
         })}
         <TouchableOpacity
-          style={styles.button}
-          onPress={() => router.push("/newpage")}
+          style={[
+            styles.button,
+            selected === null && { backgroundColor: "#ccc" },
+          ]}
+          disabled={selected === null}
+          onPress={() => router.push(roastRoutes[selected])}
         >
           <Text style={styles.buttonText}>Continue</Text>
         </TouchableOpacity>
