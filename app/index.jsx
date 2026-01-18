@@ -15,6 +15,13 @@ const HomeScreen = () => {
       >
         <Text style={styles.buttonText}>Get Started</Text>
       </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.adminButton}
+        onPress={() => router.push("/login")}
+      >
+        <Text style={styles.adminButtonText}>Admin login</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -49,6 +56,20 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   buttonText: {
+    color: "#000000ff",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  adminButton: {
+    position: "absolute",
+    backgroundColor: "#ffffffff",
+    paddingVertical: 12,
+    paddingHorizontal: 25,
+    borderRadius: 8,
+    bottom: 150,
+    alignItems: "center",
+  },
+  adminButtonText: {
     color: "#000000ff",
     fontSize: 18,
     fontWeight: "bold",
