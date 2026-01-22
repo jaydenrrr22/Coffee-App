@@ -1,6 +1,8 @@
-import { Stack, router } from "expo-router";
+import { useAuth } from "@/contexts/authContext";
+import { Stack, useRouter } from "expo-router";
 import { useState } from "react";
 import {
+  Alert,
   StyleSheet,
   Text,
   TextInput,
@@ -9,6 +11,8 @@ import {
 } from "react-native";
 
 const LoginScreen = () => {
+  const { login, register } = useAuth();
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassowrd] = useState("");
   const [isRegistering, setIsRegistering] = useState(false);
@@ -31,7 +35,7 @@ const LoginScreen = () => {
     if (isRegistering) {
       response = await register(email, password);
     } else {
-      resposse = await login(email, password);
+      response = await login(email, password);
     }
 
     if (response?.error) {

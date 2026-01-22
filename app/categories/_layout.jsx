@@ -1,7 +1,13 @@
 import { Stack } from "expo-router";
 
 const CategoryLayout = () => {
-  return <Stack />;
+  return (
+    <Stack
+      screenOptions={{
+        headerShown: false,
+      }}
+    />
+  );
 };
 
 export default CategoryLayout;

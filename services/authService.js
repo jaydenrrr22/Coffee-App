@@ -4,7 +4,7 @@ import { account } from "./appwrite";
 const authService = {
   async register(email, password) {
     try {
-      const repsonse = await account.create(ID.unique(), email, password);
+      const response = await account.create(ID.unique(), email, password);
       return response;
     } catch (error) {
       return {
@@ -24,6 +24,14 @@ const authService = {
       return {
         error: error.message || "Login failed. Please check your credential",
       };
+    }
+  },
+
+  async getUser() {
+    try {
+      return await account.get();
+    } catch (error) {
+      return null;
     }
   },
 

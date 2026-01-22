@@ -4,8 +4,7 @@ const RoastsLayout = () => {
   return (
     <Stack
       screenOptions={{
-        headerShown: true,
-        headerTitle: "Roast Details",
+        headerShown: false,
       }}
     ></Stack>
   );

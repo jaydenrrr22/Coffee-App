@@ -1,7 +1,13 @@
 import { Stack } from "expo-router";
 
 const NewPageLayout = () => {
-  return <Stack />;
+  return (
+    <Stack
+      screenOptions={{
+        headerShown: false,
+      }}
+    />
+  );
 };
 
 export default NewPageLayout;
