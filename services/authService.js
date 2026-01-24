@@ -22,7 +22,7 @@ const authService = {
       return response;
     } catch (error) {
       return {
-        error: error.message || "Login failed. Please check your credential",
+        error: error.message || "Login failed. Please check your credentials",
       };
     }
   },
