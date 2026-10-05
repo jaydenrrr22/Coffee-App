@@ -1,99 +1,115 @@
 import PostItImage from "@/assets/images/beantype.png";
-import { Stack, useRouter } from "expo-router";
-import { useState } from "react";
+import { ROASTS } from "@/constants/coffee";
+import { usePreferences } from "@/contexts/preferencesContext";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import {
+  Alert,
   Image,
   LayoutAnimation,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
 
-const roastData = [
-  {
-    type: "Light Roast",
-    description:
-      'Light roasts are removed from the roaster immediately after the first crack when the internal temperature reaches approximately 350°F–400°F. These beans are light brown with a matte, dry surface because they have not been heated long enough for internal oils to break through the surface. This roast is celebrated for preserving the "origin flavors" or terroir of the bean, resulting in a vibrant, highly acidic cup with delicate floral, citrus, or fruity notes.',
-  },
-  {
-    type: "Medium Roast",
-    description:
-      "Medium roasts are characterized by a richer brown color and reach temperatures between 410°F–428°F, typically ending just before the second crack begins. They strike a harmonious balance between the beans natural characteristics and the sweetness developed during roasting, such as caramel and chocolate undertones. This level is often the most popular due to its smooth, well-rounded body and moderate acidity, making it highly versatile for various brewing methods.",
-  },
-  {
-    type: "Medium Dark Roast",
-    description:
-      'Medium-dark roasts, often called "Full City," are roasted until the second crack is heard, reaching temperatures around 420°F–432°F. The beans exhibit a deep, rich brown color with small droplets of oil beginning to appear on the surface. This roast offers a heavier body and a spicy or bittersweet aftertaste, with the original acidity of the bean significantly reduced in favor of a bolder, "roastier" profile.',
-  },
-  {
-    type: "Dark Roast",
-    description:
-      "Dark roasts are roasted well past the second crack, reaching high temperatures of 430°F–450°F, which causes the beans to become nearly black and very oily. The roasting process almost entirely replaces the beans original flavors with intense, smoky, and charred notes similar to dark chocolate or toasted nuts. These roasts are preferred for their robust, full-bodied texture and low acidity, making them ideal for espresso and milk-based drinks.",
-  },
-];
-
-const roastRoutes = [
-  "/roasts/light",
-  "/roasts/medium",
-  "/roasts/medium-dark",
-  "/roasts/dark",
-];
-
 const NewPageScreen = () => {
   const [expanded, setExpanded] = useState(null);
-  const [selected, setSelected] = useState(null);
+  const { roasts, saveRoasts, loading } = usePreferences();
+  const [selected, setSelected] = useState(roasts);
+  const [saving, setSaving] = useState(false);
+  const { from } = useLocalSearchParams();
   const router = useRouter();
 
-  const toggleExpand = (index) => {
+  useEffect(() => {
+    if (!loading) {
+      setSelected(roasts);
+    }
+  }, [loading, roasts]);
+
+  const toggleExpand = (key) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setExpanded(expanded === index ? null : index);
+    setExpanded(expanded === key ? null : key);
+  };
+
+  const toggleSelected = (key) => {
+    setSelected((prev) =>
+      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
+    );
+  };
+
+  const save = async () => {
+    setSaving(true);
+    const response = await saveRoasts(selected);
+    setSaving(false);
+    if (response?.error) {
+      Alert.alert("Error", response.error);
+      return;
+    }
+    if (from === "categories" && router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace("/categories");
+    }
   };
 
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
-      <View style={styles.container}>
+      <ScrollView style={styles.container}>
         <Image source={PostItImage} style={styles.image} />
         <Text style={styles.headerText}>Choose Coffee Bean Roasting Type</Text>
+        <Text style={styles.hint}>
+          Pick as many as you like. We use them to rank coffee shops near you.
+        </Text>
 
-        {roastData.map((roast, index) => {
-          const isChecked = selected === index;
+        {ROASTS.map((roast) => {
+          const isChecked = selected.includes(roast.key);
           return (
-            <View key={index} style={styles.card}>
+            <View key={roast.key} style={styles.card}>
               <View style={styles.row}>
                 <TouchableOpacity
                   style={styles.titleArea}
-                  onPress={() => toggleExpand(index)}
+                  onPress={() => toggleExpand(roast.key)}
                   activeOpacity={0.8}
                 >
-                  <Text style={styles.typeText}>{roast.type}</Text>
+                  <Text style={styles.typeText}>{roast.label}</Text>
+                  <Text style={styles.notes}>
+                    {roast.flavorNotes.join(" · ")}
+                  </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.checkbox, isChecked && styles.checkboxChecked]}
-                  onPress={() => setSelected(isChecked ? null : index)}
+                  onPress={() => toggleSelected(roast.key)}
                 >
-                  {isChecked && <Text style={styles.checkmark}>✅</Text>}
+                  {isChecked && <Text style={styles.checkmark}>✓</Text>}
                 </TouchableOpacity>
               </View>
 
-              {expanded === index && (
-                <Text style={styles.description}>{roast.description}</Text>
+              {expanded === roast.key && (
+                <>
+                  <Text style={styles.description}>{roast.description}</Text>
+                  <TouchableOpacity onPress={() => router.push(roast.route)}>
+                    <Text style={styles.link}>
+                      Brewing tips & community notes →
+                    </Text>
+                  </TouchableOpacity>
+                </>
               )}
             </View>
           );
         })}
         <TouchableOpacity
-          style={[
-            styles.button,
-            selected === null && { backgroundColor: "#ccc" },
-          ]}
-          disabled={selected === null}
-          onPress={() => router.push(roastRoutes[selected])}
+          style={[styles.button, saving && { backgroundColor: "#ccc" }]}
+          disabled={saving}
+          onPress={save}
         >
-          <Text style={styles.buttonText}>Continue</Text>
+          <Text style={styles.buttonText}>
+            {saving ? "Saving…" : "Save & find shops"}
+          </Text>
         </TouchableOpacity>
-      </View>
+      </ScrollView>
     </>
   );
 };
@@ -113,6 +129,11 @@ const styles = StyleSheet.create({
   headerText: {
     fontSize: 18,
     fontWeight: "bold",
+    marginBottom: 4,
+  },
+  hint: {
+    fontSize: 13,
+    color: "#666",
     marginBottom: 15,
   },
   card: {
@@ -132,6 +153,11 @@ const styles = StyleSheet.create({
   typeText: {
     fontSize: 16,
     fontWeight: "bold",
+  },
+  notes: {
+    fontSize: 12,
+    color: "#666",
+    marginTop: 2,
   },
   checkbox: {
     width: 24,
@@ -154,11 +180,17 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: "#333",
   },
+  link: {
+    marginTop: 8,
+    color: "#5a6283",
+    fontWeight: "bold",
+  },
   button: {
     backgroundColor: "#5a6283ff",
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: "center",
+    marginBottom: 40,
   },
   buttonText: {
     color: "#fff",

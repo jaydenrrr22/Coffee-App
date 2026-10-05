@@ -23,6 +23,10 @@ expo-env.d.ts
 # Metro
 .metro-health-check*
 
+# Python backend
+.venv/
+__pycache__/
+
 # debug
 npm-debug.*
 yarn-debug.*

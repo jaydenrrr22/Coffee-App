@@ -1,27 +1,33 @@
 import PostItImage from "@/assets/images/Bluenolia.png";
+import { useAuth } from "@/contexts/authContext";
 import { useRouter } from "expo-router";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 const HomeScreen = () => {
   const router = useRouter();
+  const { user } = useAuth();
 
   return (
     <View style={styles.container}>
       <Image source={PostItImage} style={styles.image} />
 
       <TouchableOpacity
-        style={styles.button}
-        onPress={() => router.push("/categories")}
+        style={styles.loginButton}
+        onPress={() => router.push(user ? "/home" : "/login")}
       >
-        <Text style={styles.buttonText}>Get Started</Text>
+        <Text style={styles.loginButtonText}>
+          {user ? "Continue" : "Login"}
+        </Text>
       </TouchableOpacity>
 
-      <TouchableOpacity
-        style={styles.adminButton}
-        onPress={() => router.push("/login")}
-      >
-        <Text style={styles.adminButtonText}>Admin login</Text>
-      </TouchableOpacity>
+      {!user && (
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => router.push("/categories")}
+        >
+          <Text style={styles.buttonText}>Continue as guest</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 };
@@ -60,16 +66,16 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
   },
-  adminButton: {
+  loginButton: {
     position: "absolute",
     backgroundColor: "#ffffffff",
     paddingVertical: 12,
-    paddingHorizontal: 25,
+    paddingHorizontal: 80,
     borderRadius: 8,
     bottom: 150,
     alignItems: "center",
   },
-  adminButtonText: {
+  loginButtonText: {
     color: "#000000ff",
     fontSize: 18,
     fontWeight: "bold",

@@ -1,6 +1,6 @@
 import { Stack } from "expo-router";
 
-const LoginLayout = () => {
+const StartAsGuestLayout = () => {
   return (
     <Stack
       screenOptions={{
@@ -10,4 +10,4 @@ const LoginLayout = () => {
   );
 };
 
-export default LoginLayout;
+export default StartAsGuestLayout;

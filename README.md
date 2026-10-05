@@ -1,50 +1,68 @@
-# Welcome to your Expo app 👋
+# Bluenolia
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Bluenolia helps coffee lovers discover nearby cafés that serve the beans and roasts they love, powered by community reviews.
 
-## Get started
+- **Find coffee**: enter a ZIP code and see nearby shops ranked by your roast preferences.
+- **Learn**: roast guides with flavor notes and the best ways to brew each roast.
+- **Review**: logged-in users review a visit and tag the roast, origin, and brew method they had. Those tags feed back into shop rankings (green tags), alongside Google keyword matches (yellow tags).
 
-1. Install dependencies
+The project has two parts: the Expo app (repo root) and a FastAPI + MySQL backend (`backend/`). The app never talks to MySQL or Google directly; it calls the backend.
 
-   ```bash
-   npm install
-   ```
+## 1. Start the backend
 
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+Requires Python 3.11+ and a running MySQL server.
 
 ```bash
-npm run reset-project
+cd backend
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env   # then edit DB_PASSWORD, SECRET_KEY, GOOGLE_PLACES_API_KEY
+python -m app.main
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+On startup the server creates the `DB_NAME` database and its `users` and `reviews` tables if they don't exist. Check it's up at <http://localhost:8000/health>, and browse the API at <http://localhost:8000/docs>.
 
-## Learn more
+`backend/.env` settings:
 
-To learn more about developing your project with Expo, look at the following resources:
+| Variable                      | Purpose                                                        |
+| ----------------------------- | -------------------------------------------------------------- |
+| `DB_HOST`, `DB_PORT`          | MySQL server address                                           |
+| `DB_NAME`                     | Database name (created automatically)                          |
+| `DB_USER`, `DB_PASSWORD`      | MySQL login                                                    |
+| `SECRET_KEY`                  | Signs login tokens; use a long random string                   |
+| `ACCESS_TOKEN_EXPIRE_MINUTES` | How long a login lasts (default 7 days)                        |
+| `GOOGLE_PLACES_API_KEY`       | Google **Places API (New)** key; shop search is off without it |
+| `APP_HOST`, `APP_PORT`        | `0.0.0.0` lets phones on your Wi-Fi reach the server           |
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+Generate a secret key with `python3 -c "import secrets; print(secrets.token_hex(32))"`.
 
-## Join the community
+## 2. Start the app
 
-Join our community of developers creating universal apps.
+```bash
+npm install
+npx expo start
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+The app finds the backend automatically at `http://<computer running expo start>:8000`, which works for the iOS simulator, Android emulator, and a phone on the same Wi-Fi. To point it somewhere else, set `EXPO_PUBLIC_API_URL` in the root `.env` (see `.env.example`).
+
+## API overview
+
+| Method | Path                    | Auth | Purpose                                     |
+| ------ | ----------------------- | ---- | ------------------------------------------- |
+| POST   | `/auth/register`        |      | Create account, returns token + user        |
+| POST   | `/auth/login`           |      | Log in, returns token + user                |
+| GET    | `/auth/me`              | yes  | Current user                                |
+| PATCH  | `/auth/me`              | yes  | Update display name                         |
+| PUT    | `/auth/me/password`     | yes  | Change password                             |
+| PUT    | `/auth/me/preferences`  | yes  | Save roast preferences                      |
+| POST   | `/auth/me/deactivate`   | yes  | Deactivate account                          |
+| GET    | `/reviews`              |      | Filter by `placeId`, `placeIds`, or `roast` |
+| POST   | `/reviews`              | yes  | Create a review                             |
+| POST   | `/places/search`        |      | Nearby shops (Google Text Search)           |
+| GET    | `/places/{placeId}`     |      | Shop details (Google Place Details)         |
+
+## Notes
+
+- AI summaries on the shop page come from Google's own review summaries (Places API `reviewSummary` / `generativeSummary`). These aren't available for every place or region; when missing, the page falls back to Google's editorial summary.
+- Google's terms limit storing Places content. The backend passes Google details and reviews through without saving them; only the place ID and shop name are stored with each Bluenolia review.
