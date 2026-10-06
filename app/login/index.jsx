@@ -1,5 +1,5 @@
 import { useAuth } from "@/contexts/authContext";
-import { Stack, useRouter } from "expo-router";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import {
   Alert,
@@ -13,6 +13,7 @@ import {
 const LoginScreen = () => {
   const { login, register } = useAuth();
   const router = useRouter();
+  const { returnBack } = useLocalSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isRegistering, setIsRegistering] = useState(false);
@@ -46,7 +47,11 @@ const LoginScreen = () => {
         Alert.alert("Error", response.error);
         return;
       }
-      router.replace("/categories");
+      if (returnBack && router.canGoBack()) {
+        router.back();
+      } else {
+        router.replace("/home");
+      }
     } finally {
       setLoading(false);
     }
