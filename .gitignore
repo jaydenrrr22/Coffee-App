@@ -26,6 +26,8 @@ expo-env.d.ts
 # Python backend
 .venv/
 __pycache__/
+backend/tests/test.db
+.pytest_cache/
 
 # debug
 npm-debug.*

@@ -44,6 +44,21 @@ npm install
 npx expo start
 ```
 
+## Tests
+
+Frontend unit tests (ranking, coffee helpers, API helpers):
+
+```bash
+npm test
+```
+
+Backend API tests (SQLite + mocked Google Places — no MySQL or API key needed):
+
+```bash
+cd backend
+pytest -q
+```
+
 The app finds the backend automatically at `http://<computer running expo start>:8000`, which works for the iOS simulator, Android emulator, and a phone on the same Wi-Fi. To point it somewhere else, set `EXPO_PUBLIC_API_URL` in the root `.env` (see `.env.example`).
 
 ## API overview
