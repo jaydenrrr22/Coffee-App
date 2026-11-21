@@ -4,10 +4,13 @@ def test_search_and_details(client, mock_google):
         json={"latitude": 40.7, "longitude": -74.0, "roasts": ["light"]},
     )
     assert search.status_code == 200
-    places = search.json()["places"]
+    body = search.json()
+    places = body["places"]
+    assert "summaries" in body
     names = {place["name"]: place["matchedRoasts"] for place in places}
     assert names["Alpha"] == ["light"]
     assert names["Beta"] == []
+    assert "score" in places[0]
 
     details = client.get("/places/ChIJAAAAAAAAAA1")
     assert details.status_code == 200

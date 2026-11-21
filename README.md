@@ -73,9 +73,13 @@ The app finds the backend automatically at `http://<computer running expo start>
 | PUT    | `/auth/me/preferences`  | yes  | Save roast preferences                      |
 | POST   | `/auth/me/deactivate`   | yes  | Deactivate account                          |
 | GET    | `/reviews`              |      | Filter by `placeId`, `placeIds`, or `roast` |
-| POST   | `/reviews`              | yes  | Create a review                             |
-| POST   | `/places/search`        |      | Nearby shops (Google Text Search)           |
+| POST   | `/reviews`              | yes  | Create a review (also refreshes place stats)|
+| POST   | `/reviews/batch`        | yes  | Batch-create reviews with one DB write      |
+| POST   | `/places/search`        |      | Nearby shops + community ranking/summaries  |
+| POST   | `/places/stats`         |      | Community tag summaries for place IDs       |
 | GET    | `/places/{placeId}`     |      | Shop details (Google Place Details)         |
+
+Community tag summaries use one `IN` query, in-memory dictionary aggregation, and a SQLAlchemy `add_all` batch-write into `place_stats`.
 
 ## Notes
 
