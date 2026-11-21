@@ -2,8 +2,7 @@ import Chip from "@/components/Chip";
 import { roastLabel } from "@/constants/coffee";
 import { usePreferences } from "@/contexts/preferencesContext";
 import placesService from "@/services/placesService";
-import reviewService from "@/services/reviewService";
-import { rankPlaces, summarizeByPlace } from "@/utils/ranking";
+import { rankPlaces } from "@/utils/ranking";
 import { Stack, useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -62,8 +61,8 @@ const CategoryScreen = () => {
 
   const loadCommunity = useCallback(async (list) => {
     try {
-      const reviews = await reviewService.listForPlaces(list.map((p) => p.id));
-      setSummaries(summarizeByPlace(reviews));
+      const next = await placesService.getCommunityStats(list.map((p) => p.id));
+      setSummaries(next);
     } catch (error) {
       console.error(error);
     }
@@ -79,13 +78,14 @@ const CategoryScreen = () => {
       setSearching(true);
       setError("");
       try {
-        const results = await placesService.searchNearby({
-          ...coords,
-          roasts: roastsKey ? roastsKey.split(",") : [],
-        });
+        const { places: results, summaries: nextSummaries } =
+          await placesService.searchNearby({
+            ...coords,
+            roasts: roastsKey ? roastsKey.split(",") : [],
+          });
         if (cancelled) return;
         setPlaces(results);
-        loadCommunity(results);
+        setSummaries(nextSummaries);
 
         if (results.length > 0) {
           mapRef.current?.fitToCoordinates(
@@ -107,7 +107,7 @@ const CategoryScreen = () => {
     return () => {
       cancelled = true;
     };
-  }, [coords, roastsKey, loadCommunity]);
+  }, [coords, roastsKey]);
 
   // Pick up reviews written on the shop page when returning here.
   useFocusEffect(
@@ -118,6 +118,7 @@ const CategoryScreen = () => {
     }, [places, loadCommunity])
   );
 
+  // Server already ranks on search; re-rank locally when prefs/summaries change.
   const ranked = useMemo(
     () => rankPlaces(places, summaries, roasts),
     [places, summaries, roasts]

@@ -1,11 +1,14 @@
 import logging
 
 import httpx
-from fastapi import APIRouter, HTTPException, Path
+from fastapi import APIRouter, Depends, HTTPException, Path
+from sqlalchemy.orm import Session
 
 from app.core.config import conf
-from app.schemas.places import PlaceSearch
+from app.dependencies.database import get_db
+from app.schemas.places import PlaceSearch, PlaceStatsQuery
 from app.services import google_places
+from app.services.place_stats import load_place_summaries, rank_places
 
 router = APIRouter(prefix="/places", tags=["places"])
 logger = logging.getLogger(__name__)
@@ -21,16 +24,28 @@ def _require_api_key():
 
 
 @router.post("/search")
-async def search(payload: PlaceSearch):
+async def search(payload: PlaceSearch, db: Session = Depends(get_db)):
     api_key = _require_api_key()
+    preferred = list(dict.fromkeys(payload.roasts))
     try:
         places = await google_places.search_nearby(
-            api_key, payload.latitude, payload.longitude, list(dict.fromkeys(payload.roasts))
+            api_key, payload.latitude, payload.longitude, preferred
         )
     except httpx.HTTPError as error:
         logger.error("Google Text Search failed: %s", error)
         raise HTTPException(status_code=502, detail="Shop search is temporarily unavailable")
-    return {"places": places}
+
+    summaries = load_place_summaries(db, [place["id"] for place in places])
+    return {
+        "places": rank_places(places, summaries, preferred),
+        "summaries": summaries,
+    }
+
+
+@router.post("/stats")
+def community_stats(payload: PlaceStatsQuery, db: Session = Depends(get_db)):
+    summaries = load_place_summaries(db, payload.place_ids)
+    return {"summaries": summaries}
 
 
 @router.get("/{place_id}")

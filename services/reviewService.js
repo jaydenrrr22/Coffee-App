@@ -25,6 +25,17 @@ const reviewService = {
       return { error: error.message || "Could not save your review" };
     }
   },
+
+  async createBatch(reviews) {
+    try {
+      return await request("/reviews/batch", {
+        method: "POST",
+        body: { reviews },
+      });
+    } catch (error) {
+      return { error: error.message || "Could not save reviews" };
+    }
+  },
 };
 
 export default reviewService;

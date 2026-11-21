@@ -1,5 +1,5 @@
 from app.dependencies.database import Base, engine, ensure_database_exists
-from app.models import review, user  # noqa: F401  (registers tables on Base)
+from app.models import place_stat, review, user  # noqa: F401  (registers tables on Base)
 
 
 def index():

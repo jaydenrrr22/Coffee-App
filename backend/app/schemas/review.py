@@ -15,6 +15,10 @@ class ReviewCreate(CamelModel):
     brew_method: str | None = Field(default=None, max_length=50)
 
 
+class ReviewBatchCreate(CamelModel):
+    reviews: list[ReviewCreate] = Field(min_length=1, max_length=50)
+
+
 class ReviewResponse(CamelModel):
     id: int
     place_id: str
